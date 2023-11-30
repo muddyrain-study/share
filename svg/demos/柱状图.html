@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .y-text {
+      font-size: 6px;
+      fill: #666;
+      text-anchor: end;
+    }
+
+    .x-line {
+      fill: none;
+      stroke-width: 0.5px;
+      stroke: #cccccc;
+    }
+
+    .x-text {
+      text-anchor: middle;
+      font-size: 6px;
+      fill: #666;
+    }
+
+    .bar {
+      fill: #5c7DD9;
+    }
+
+    .bar rect {
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .bar rect.rect-bg {
+      fill: #cfcfcf;
+      fill-opacity: 0.5;
+    }
+
+    .bar rect:hover {
+      opacity: 0.8;
+    }
+  </style>
+  <style>
+    .data-circle circle {
+      r: 1px;
+      fill: #ffffff;
+      stroke: #00f;
+      stroke-width: 0.5px;
+      cursor: pointer;
+      transition: all 0.5s;
+    }
+
+    .data-circle circle:hover {
+      r: 2px
+    }
+
+    .data-line {
+      fill: none;
+      stroke: #00f;
+      stroke-width: 0.75px;
+    }
+
+    #data-panel {
+      padding: 10px 20px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      position: absolute;
+      border-radius: 5px;
+      transition: left 0.3s linear, top 0.3s linear, opacity 0.1s ease-in;
+      opacity: 0;
+    }
+
+    .polyline {
+      stroke-dasharray: var(--l);
+      stroke-dashoffset: var(--l);
+      animation: stroke 2s forwards;
+    }
+
+    @keyframes stroke {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <svg id="svg" width="1000" height="1000" style="border: 1px solid #666;">
+  </svg>
+  <div id="data-panel">500</div>
+  <div></div>
+  <script>
+    /**
+ *
+ * @param {*} arg
+ * @returns {xSpace, ratio}
+ */
+    function draw(arg) {
+      const NS = 'http://www.w3.org/2000/svg';
+      const svg = document.querySelector(arg.id);
+      const result = {};
+      function drawBox(arg) {
+        if (typeof arg === 'string') {
+          arg = { id: string };
+        }
+        const config = {
+          color: '#ccc',
+          title: '标题',
+          titleColor: '#000',
+          xAxis: true,
+          yAxis: true,
+          count: 5,
+          ...arg,
+        };
+
+        svg.setAttribute('viewBox', '0 0 250 250');
+        const path = document.createElementNS(NS, 'path');
+        const g = document.createElementNS(NS, 'g');
+        const title = document.createElementNS(NS, 'text');
+        title.innerHTML = config.title;
+        title.setAttribute('x', '10');
+        title.setAttribute('y', '15');
+        title.setAttribute('fill', `${config.titleColor}`);
+        title.setAttribute('font-size', '8');
+        g.appendChild(title);
+        path.setAttribute('stroke', `${config.color}`);
+        path.setAttribute('stroke-width', '0.5');
+        let d = '';
+        const space = 200 / config.count;
+        for (let i = 0;i <= config.count;i++) {
+          if (config.xAxis) {
+            d += `M25 ${25 + i * space} H225 `;
+          }
+          if (config.yAxis) {
+            d += `M${25 + i * space} 25 V225 `;
+          }
+        }
+        path.setAttribute('d', d);
+        g.appendChild(path);
+        if (svg.children.length > 0) {
+          svg.insertBefore(g, svg.children[0]);
+        } else {
+          svg.appendChild(g);
+        }
+      }
+
+      function drawLabel(arg) {
+        const config = {
+          ...arg,
+        };
+        // 绘制底部文本
+        if (config.xText && config.xText.length > 0) {
+          const xSpace = 200 / config.xText.length;
+          result.xSpace = xSpace;
+          let g = document.createElementNS(NS, 'g');
+          g.classList.add('x-line');
+          svg.appendChild(g);
+          let d = '';
+          for (let i = 0;i <= config.xText.length;i++) {
+            d += `M${25 + i * xSpace} 225 V230`;
+          }
+          const path = document.createElementNS(NS, 'path');
+          path.setAttribute('d', d);
+          path.setAttribute('stroke', '#666666');
+          path.setAttribute('stroke-width', '0.5px');
+          g.appendChild(path);
+
+          g = document.createElementNS(NS, 'g');
+          g.classList.add('x-text');
+          svg.appendChild(g);
+          config.xText.map((item, index) => {
+            const text = document.createElementNS(NS, 'text');
+            text.innerHTML = item;
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('x', 25 + xSpace / 2 + index * xSpace);
+            text.setAttribute('font-size', '5px');
+            text.setAttribute('y', 232);
+            g.appendChild(text);
+          });
+        }
+        // 绘制左侧文本
+        if (config.yMax > 0 && config.part > 0) {
+          const upLimit = calcUpLimit(config.yMax);
+          const yDataSpace = upLimit / config.part;
+          const ratio = 200 / upLimit;
+          result.ratio = ratio;
+          const ySpace = 200 / config.part;
+          const g = document.createElementNS(NS, 'g');
+          g.classList.add('y-text');
+          svg.appendChild(g);
+          for (let i = 0;i <= config.part;i++) {
+            const text = document.createElementNS(NS, 'text');
+            text.setAttribute('x', 20);
+            text.setAttribute('y', 225 - i * ySpace);
+            text.innerHTML = i * yDataSpace;
+            g.appendChild(text);
+          }
+        }
+      }
+
+      drawBox(arg);
+      drawLabel(arg);
+      return result;
+    }
+
+    function calcUpLimit(maxValue) {
+      const leg = (maxValue + '').length;
+      const unit = Math.pow(10, leg - 1);
+      return maxValue % unit === 0
+        ? maxValue
+        : parseInt(maxValue / unit) * unit + unit;
+    }
+
+  </script>
+  <script>
+    const data = [
+      {
+        text: "一季度",
+        value: 320
+      },
+      {
+        text: "二季度",
+        value: 620
+      },
+      {
+        text: "三季度",
+        value: 500
+      },
+      {
+        text: "四季度",
+        value: 820
+      }
+    ]
+    const texts = data.map(item => item.text);
+    const values = data.map(item => item.value);
+    const yMax = Math.max(...values);
+    const result = draw({
+      id: "#svg",
+      yAxis: false,
+      color: "#acf",
+      title: "2023年各季度就业人数",
+      xText: texts,
+      yMax,
+      part: 5
+    });
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("bar");
+    svg.appendChild(g);
+    values.map((value, i) => {
+      const rect1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      const rect2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect1.setAttribute("x", 25 + result.xSpace * i + result.xSpace / 4);
+      rect1.setAttribute("y", 25);
+      rect1.setAttribute("width", result.xSpace / 2);
+      rect1.setAttribute("height", 200);
+      rect1.classList.add("rect-bg");
+
+      rect2.setAttribute("x", 25 + result.xSpace * i + result.xSpace / 4);
+      rect2.setAttribute("y", 225 - value * result.ratio);
+      rect2.setAttribute("width", result.xSpace / 2);
+      rect2.setAttribute("height", value * result.ratio);
+      rect2.setAttribute("value", value);
+      rect2.classList.add("rect-value");
+      g.appendChild(rect1);
+      g.appendChild(rect2);
+    })
+
+    const panel = document.querySelector("#data-panel");
+    svg.onmouseover = function (e) {
+      if (e.target.tagName === "rect" && e.target.classList.contains("rect-value")) {
+        function show(e) {
+          panel.innerHTML = e.target.getAttribute("value");
+          panel.style.left = e.clientX + 5 + "px";
+          panel.style.top = e.clientY + 5 + "px";
+          panel.style.opacity = 1;
+        }
+        show(e);
+        e.target.onmousemove = function (e) {
+          show(e);
+        }
+        svg.onmouseout = function (e) {
+          if (e.target.tagName === "rect" && e.target.classList.contains("rect-value")) {
+            panel.style.opacity = 0;
+          }
+        }
+      }
+    }
+
+
+  </script>
+</body>
+
+</html>

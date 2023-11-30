@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #svg {
+      margin: 150px;
+    }
+
+    .svg-label {
+      font-size: 8px;
+    }
+
+    .svg-label-y {
+      text-anchor: end;
+    }
+
+    .svg-label-x {
+      text-anchor: middle;
+    }
+
+    .line {
+      stroke-dasharray: var(--l);
+      stroke-dashoffset: var(--l);
+      animation: stroke 1s forwards ease-in;
+      stroke-linecap: round;
+    }
+
+    @keyframes stroke {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 折线图数据源: 62 34 65 94 -->
+  <svg id="svg" width="1000" height="1000" style="border: 1px solid #666;">
+  </svg>
+
+  <script>
+    const config = {
+      count: 10,
+      data: [{
+        label: '周一',
+        value: 25
+      }, {
+        label: '周二',
+        value: 59
+      }, {
+        label: '周三',
+        value: 80
+      }, {
+        label: '周四',
+        value: 86
+      }, {
+        label: '周五',
+        value: 56
+      }]
+    }
+
+    // 计算上限
+    const computedUpLimit = (maxValue) => {
+      // 长度
+      const len = (maxValue + "").length
+      // 数字长度单位
+      const unit = Math.pow(10, len - 1)
+      console.log(unit);
+      // 上限
+      return unit < 100 ? 100 : (Math.ceil(maxValue / unit)) * unit
+    }
+    function createLine(config) {
+      const svg = document.querySelector('#svg')
+      svg.setAttribute("viewBox", "0 0 250 250")
+      const NS = "http://www.w3.org/2000/svg"
+      // 获取间距
+      const upLimit = computedUpLimit(Math.max(...config.data.map(item => item.value)))
+      const yDataSpace = upLimit / config.count
+      const space = 200 / config.count;
+      const g = document.createElementNS(NS, 'g');
+      const path = document.createElementNS(NS, 'path');
+
+
+
+      // 绘制 x 轴 y 轴
+      let d = ""
+      for (let i = 0;i <= config.count;i++) {
+        d += `M25 ${25 + i * space} H225 `;
+        d += `M${25 + i * space} 25 V225 `;
+      }
+      path.setAttribute('d', d);
+      path.setAttribute('stroke', '#ccc');
+      path.setAttribute('stroke-width', '1');
+      g.appendChild(path);
+
+      // 绘制文本标记 y 轴
+      for (let i = 0;i <= config.count;i++) {
+        const text = document.createElementNS(NS, 'text');
+        text.setAttribute('y', 225 - i * space);
+        text.setAttribute('x', 23);
+        text.setAttribute('class', 'svg-label svg-label-y');
+        text.textContent = yDataSpace * i;
+        g.appendChild(text);
+      }
+      const dataLength = config.data.length
+
+      // 绘制文本标记 x 轴
+      const xSpace = (200 / dataLength)
+      for (let i = 0;i < dataLength;i++) {
+        const text = document.createElementNS(NS, 'text');
+        text.setAttribute('y', 235);
+        text.setAttribute('x', 25 + i * xSpace + xSpace / 2);
+        text.setAttribute('class', 'svg-label svg-label-x');
+        text.textContent = config.data[i].label;
+        g.appendChild(text);
+      }
+
+      // 绘制折线
+      const line = document.createElementNS(NS, 'polyline');
+      let points = ""
+      for (let i = 0;i < dataLength;i++) {
+        points += `${25 + i * (200 / dataLength) + space / 2},${225 - config.data[i].value * 2} `;
+      }
+      line.setAttribute('points', points);
+      line.setAttribute('fill', 'none');
+      line.setAttribute('stroke', 'red');
+      line.setAttribute('class', 'line');
+      line.setAttribute('stroke-width', '1');
+      g.appendChild(line);
+
+
+      // 绘制折线上的圆点
+      for (let i = 0;i < dataLength;i++) {
+        const circle = document.createElementNS(NS, 'circle');
+        circle.setAttribute('cx', 25 + i * (200 / dataLength) + space / 2);
+        circle.setAttribute('cy', 225 - config.data[i].value * 2);
+        circle.setAttribute('r', '2');
+        circle.setAttribute('fill', 'red');
+        g.appendChild(circle);
+      }
+
+      svg.appendChild(g);
+
+      const lineElement = document.querySelector('.line');
+      const l = lineElement.getTotalLength();
+      lineElement.style.setProperty('--l', l);
+    }
+
+    createLine(config);
+
+  </script>
+</body>
+
+</html>
