@@ -79,7 +79,7 @@
       const NS = "http://www.w3.org/2000/svg"
       // 获取间距
       const upLimit = computedUpLimit(Math.max(...config.data.map(item => item.value)))
-      const yDataSpace = upLimit / config.count
+      const ySpace = upLimit / config.count
       const space = 200 / config.count;
       const g = document.createElementNS(NS, 'g');
       const path = document.createElementNS(NS, 'path');
@@ -103,7 +103,7 @@
         text.setAttribute('y', 225 - i * space);
         text.setAttribute('x', 23);
         text.setAttribute('class', 'svg-label svg-label-y');
-        text.textContent = yDataSpace * i;
+        text.textContent = ySpace * i;
         g.appendChild(text);
       }
       const dataLength = config.data.length

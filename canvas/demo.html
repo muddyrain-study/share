@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: #93b5ad;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas></canvas>
+  <script>
+    const canvas = document.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // 设置画布的宽高比例 保证画布不会变形
+    canvas.width = window.innerWidth * window.devicePixelRatio;
+    canvas.height = window.innerHeight * window.devicePixelRatio;
+
+    // 将画布的坐标系进行转换  移至画布宽度的中心 以及 高度的底部
+    ctx.translate(canvas.width / 2, canvas.height);
+    // 将画布的坐标系进行转换  将画布的y轴进行翻转
+    ctx.scale(1, -1);
+
+
+    // 开始绘制小树
+    /**
+     * @param {[number,number]} v0 线条的坐标
+     * @param {number} thick 线条的粗细
+     * @param {number} length 线条的长度
+     * @param {number} alpha 线条的角度
+     */
+    function draw(v0, thick, length, alpha) {
+      if (thick < 10 && Math.random() < 0.3) {
+        return  // 递归结束条件
+      }
+      // 添加小花朵
+      if (thick < 4) {
+        ctx.beginPath();
+        ctx.fillStyle = Math.random() < 0.5 ? '#fe2c55' : '#ffffff';
+        ctx.arc(v0[0], v0[1], 5, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
+      ctx.beginPath()
+      // 从树的中心点开始绘制
+      ctx.moveTo(...v0)
+      // 设置树的终点坐标
+      const v1 = [
+        v0[0] + length * Math.cos((alpha * Math.PI) / 180),
+        v0[1] + length * Math.sin((alpha * Math.PI) / 180)
+      ]
+      // 绘制树干
+      ctx.lineTo(...v1)
+      ctx.strokeStyle = '#333333'
+      ctx.lineWidth = thick
+      // 线条的末端样式
+      ctx.lineCap = 'round'
+      ctx.stroke()
+
+      // 可以越来越细
+      if (thick * 0.8 >= 1) {
+        requestAnimationFrame(() => {
+          draw(v1, thick * 0.8, length * 0.8, alpha + Math.random() * 40)
+          draw(v1, thick * 0.8, length * 0.8, alpha - Math.random() * 40)
+        })
+      }
+    }
+    draw([0, 0], 50, 250, 90);
+
+
+  </script>
+</body>
+
+</html>
