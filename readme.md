@@ -2,7 +2,7 @@
 
 ## SVG
 
-先整理几个插件用于快速开发 svg 
+先整理几个插件用于快速开发 svg
 
 ![Alt text](image.png)
 ![Alt text](image-1.png)
@@ -54,6 +54,8 @@
 ![Alt text](image-3.png)
 
 ## ThreeJs
+
+![Alt text](image-5.png)
 
 ## 总结
 

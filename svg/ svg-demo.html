@@ -39,7 +39,7 @@
 
 <body>
   <!-- 折线图数据源: 62 34 65 94 -->
-  <svg id="svg" width="1000" height="1000" style="border: 1px solid #666;">
+  <svg id="svg" width="500" height="500" style="border: 1px solid #666;">
   </svg>
 
   <script>
@@ -58,8 +58,20 @@
         label: '周四',
         value: 86
       }, {
+        label: '周四',
+        value: 86
+      }, {
+        label: '周四',
+        value: 86
+      }, {
+        label: '周四',
+        value: 20
+      }, {
+        label: '周四',
+        value: 300
+      }, {
         label: '周五',
-        value: 56
+        value: 500
       }]
     }
 
@@ -83,7 +95,6 @@
       const space = 200 / config.count;
       const g = document.createElementNS(NS, 'g');
       const path = document.createElementNS(NS, 'path');
-
 
 
       // 绘制 x 轴 y 轴
